@@ -30,6 +30,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeMapper employeeMapper;
 
     /**
+     * 根据id查询员工信息
+     * @param id
+     * @return
+     */
+    @Override
+    public Employee getById(Long id) {
+        Employee employee = employeeMapper.getByid(id);
+        employee.setPassword("******");
+        return employee;
+    }
+
+    /**
      * 员工登录
      *
      * @param employeeLoginDTO
@@ -99,6 +111,17 @@ public class EmployeeServiceImpl implements EmployeeService {
                         .status(status)
                         .id(id)
                         .build();
+        employeeMapper.update(employee);
+    }
+
+    /**
+     * 编辑员工信息
+     * @param employeeDTO
+     */
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
         employeeMapper.update(employee);
     }
 }
