@@ -2,6 +2,8 @@ package com.sky.aspect;
 
 
 import com.sky.annotation.AutoFill;
+import com.sky.constant.AutoFillConstant;
+import com.sky.context.BaseContext;
 import com.sky.enumeration.OperationType;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -14,6 +16,7 @@ import org.aspectj.weaver.JoinPointSignature;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 
 /**
  * 自定义切面类，实现公共字段自动填充处理逻辑
@@ -42,11 +45,44 @@ public class AutoFillAspect {
         AutoFill autoFill = signature.getMethod().getAnnotation(AutoFill.class);
         OperationType operationType = autoFill.value();
         //获取到当前被拦截方法的参数--实体对象
+        Object[] args = joinPoint.getArgs();
+        if(args == null || args.length == 0) {
+            return;
+        }
+        Object obj = args[0];
 
         //准备赋值的数据
+        LocalDateTime now = LocalDateTime.now();
+        Long currentId = BaseContext.getCurrentId();
 
         //根据当前不同的操作类型，为对应的属性通过反射来赋值
+        if(OperationType.INSERT == operationType){
+            try {
+                Method setCreateTimeMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+                Method setCreateUserMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+                Method setUpdateUserMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setUpdateTimeMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                //通过反射赋值
+                setCreateTimeMethod.invoke(obj,now);
+                setCreateUserMethod.invoke(obj,currentId);
+                setUpdateUserMethod.invoke(obj,currentId);
+                setUpdateTimeMethod.invoke(obj,now);
 
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }else if(OperationType.UPDATE == operationType){
+            try {
+                Method setUpdateUserMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setUpdateTimeMethod = obj.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                //通过反射赋值
+                setUpdateUserMethod.invoke(obj,currentId);
+                setUpdateTimeMethod.invoke(obj,now);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
     }
 
