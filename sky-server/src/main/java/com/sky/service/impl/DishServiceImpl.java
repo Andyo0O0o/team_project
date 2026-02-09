@@ -14,6 +14,7 @@ import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
+import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,45 @@ public class DishServiceImpl implements DishService {
         //删除菜品口味表中的菜品数据
         dishFlavourMapper.deleteByDishIds(ids);
     }
+
+    @Override
+    public DishVO getByIdWithFlavor(Long id) {
+
+        //根据id查询菜品数据
+        Dish dish = dishMapper.getById(id);
+
+        //根据id查询菜品关联的口味数据
+        List<DishFlavor> flavors = dishFlavourMapper.getByDishId(id);
+
+        //封装VO对象
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+        dishVO.setFlavors(flavors);
+
+        return dishVO;
+    }
+
+    @Override
+    public void updateWithFlavor(DishDTO dishDTO) {
+        //更新菜品表中的数据
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        dishMapper.update(dish);
+
+        //删除原有的口味数据
+        dishFlavourMapper.deleteByDishId(dishDTO.getId());
+
+        //添加新的口味数据
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        if (flavors != null && flavors.size() > 0){
+            //设置口味数据的dishId
+            flavors.forEach(df -> df.setDishId(dishDTO.getId()));
+        }
+        //向口味表插入n条数据
+        dishFlavourMapper.insertBatch(flavors);
+
+    }
+
 
 }
 
