@@ -2,15 +2,12 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.sky.constant.MessageConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
-import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavourMapper;
 import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -29,8 +26,6 @@ public class DishServiceImpl implements DishService {
     private DishMapper dishMapper;
     @Autowired
     private DishFlavourMapper dishFlavourMapper;
-    @Autowired
-    private SetmealDishMapper setmealDishMapper;
 
     /**
      * 新增菜品
